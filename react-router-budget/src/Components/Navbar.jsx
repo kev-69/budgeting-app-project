@@ -16,7 +16,7 @@ const Navbar = ({ userName }) => {
             <span>Home Budget</span>
         </NavLink>
         {
-            //userName && (
+            userName && (
                 <Form 
                     method="post" 
                     action="/logout"
@@ -25,13 +25,12 @@ const Navbar = ({ userName }) => {
                         event.preventDefault()
                         }
                     }}>
-                        
                     <button type="submit" className="btn btn--warning">
                         <span>Delete User</span>
                     <TrashIcon width={20}/>
                     </button> 
                 </Form>
-            
+            )
         }
     </nav>
   )
