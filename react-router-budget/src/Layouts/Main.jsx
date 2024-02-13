@@ -12,13 +12,13 @@ import { fetchData } from "../helpers"
 
 
 // Loaders
-export function mainLoader() {
+export function mainLoader () {
     const userName = fetchData ("userName");
     return { userName }
 }
 
 const Main = () => {
-    const { userName } = useLoaderData()
+    const {userName} = useLoaderData();
 
   return (
     <div className="layout">  
