@@ -1,6 +1,7 @@
+// React Router Dom imports
 import { redirect } from "react-router-dom";
 
-// Helpers
+// Helpers imports
 import { deleteItem } from "../helpers";
 
 // Library imports
@@ -12,8 +13,8 @@ export async function logoutAction () {
     deleteItem({key: "budgets"})
     deleteItem({key: "expenses"})
 
-    toast.success("Your account has been successfully deleted !")
+    toast.success("Your account has been successfully deleted!")
 
-    //Action to redirect
+    //Redirecting 
     return redirect("/")
 } 
