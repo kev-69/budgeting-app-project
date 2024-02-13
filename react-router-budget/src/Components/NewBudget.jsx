@@ -1,3 +1,4 @@
+// Imports from react
 import React, { useEffect, useRef } from 'react'
 
 // React router dom imports
@@ -11,7 +12,8 @@ const NewBudget = () => {
     const fetcher = useFetcher();
     const isSubmitting = fetcher.state === "submitting";
     const formRef = useRef();
-    const focusRef = useRef()
+    const focusRef = useRef();
+
     useEffect (()=> {
         if (!isSubmitting) {
             formRef.current.reset()
@@ -22,15 +24,19 @@ const NewBudget = () => {
   return (
     <div className="form-wrapper">
       <h2 className="h3">Create new budget</h2>
-    <fetcher.Form method="Post" className="grid-sm" ref={formRef}>
+      
+    <fetcher.Form method="post" className="grid-sm" ref={formRef}>
+
         <div className="grid-xs">
             <label htmlFor="newBudget">Budget Name</label>
             <input type="text" name="newBudget" id="newBudget" placeholder="e.g. Groceries" required ref={focusRef} />
         </div>
+
         <div className="grid-xs">
             <label htmlFor="newBudgetAmount">Amount</label>
-            <input type="number" name="newBudgetAmount" placeholder="e.g. $400" step="0.01" inputMode="decimal" required />
+            <input type="number" name="newBudgetAmount" id="newBudgetAmount" placeholder="e.g. $400" step="0.10" inputMode="decimal" required />
         </div>
+
         <input type="hidden" name="_action" value="createBudget" />
         <button type="submit" className="btn btn--dark" disabled={isSubmitting}>
             {
@@ -42,7 +48,6 @@ const NewBudget = () => {
             }
         </button>
     </fetcher.Form>
-
     </div>
   )
 }

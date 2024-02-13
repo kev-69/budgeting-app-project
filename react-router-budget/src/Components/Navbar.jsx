@@ -2,13 +2,12 @@
 import { Form, NavLink } from "react-router-dom";
 
 // Library imports for heroicons
-import { TrashIcon } from '@heroicons/react/24/solid'
+import { TrashIcon } from '@heroicons/react/24/outline'
 
 // Nav bar assets imports
 import logomark from "../assets/logomark.svg";
 
-
-const Navbar = ({ userName }) => {
+const Navbar = ({userName}) => {
   return (
     <nav>
         <NavLink to="/" aria-label="Go to home">
@@ -17,10 +16,7 @@ const Navbar = ({ userName }) => {
         </NavLink>
         {
             userName && (
-                <Form 
-                    method="post" 
-                    action="/logout"
-                    onSubmit={(event) => {
+                <Form method="post" action="logout" onSubmit={(event) => {
                         if (!confirm("Delete user and all data?")) {
                         event.preventDefault()
                         }
