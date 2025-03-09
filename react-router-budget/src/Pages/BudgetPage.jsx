@@ -1,85 +1,77 @@
-// Imports from react
-import React from 'react'
-
-// React router dom imports
-import { useLoaderData } from 'react-router-dom';
-
-//Helpers imports
-import { createExpense, deleteItem, getAllMatchingItems } from '../helpers'
-
-// Components imports
-import BudgetItem from '../Components/BudgetItem';
-import ExprenseForm from '../Components/ExprenseForm';
-import Table from '../Components/Table';
-
-// Library imports
-import { toast } from 'react-toastify';
-
-export async function budgetLoader ({params}) {
-  const budget = await getAllMatchingItems({
-    category: "budgets",
-    key: "id",
-    value: params.id,
-  })[0];
-
-  const expenses = await getAllMatchingItems({
-    category: "expenses",
-    key: "budgetId",
-    value: params.id,
-  })
-
-  if (!budget) {
-    throw new Error("The budget you're trying to find does not exist.");
-  }
-
-  return {budget, expenses}
-}
-
-export async function budgetAction({request}) {
-  const data = await request.formData();
-  const {_action, ...values} = Object.fromEntries(data);
-
-  if (_action === "createExpense") {
-    try {
-          createExpense ({name: values.newExpense, amount: values.newExpenseAmount, budgetId: values.newExpenseBudget})
-          return toast.success(`${values.newExpense} Expense  Added`)
-        } catch (e) {
-          throw new Error ("There was a problem adding your expense.")
-        }
-  }
-
-  if (_action === "deleteExpense") {
-    try{
-      deleteItem({key: "expenses", id: values.expenseId,});
-    return toast.success("Expense deleted!");
-    } catch (e) {
-      throw new Error("There was a problem deleting your expense.  ")
-    }    
-  }
-}
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const BudgetPage = () => {
-  const {budget, expenses} = useLoaderData();
+  const [budget, setBudget] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Function to fetch budget and expenses data from backend
+    const fetchData = async () => {
+      try {
+        // Fetch budget data
+        const budgetResponse = await axios.get('/api/budgets/:id'); // Replace '/api/budgets/:id' with your actual backend route
+        setBudget(budgetResponse.data);
+
+        // Fetch expenses data
+        const expensesResponse = await axios.get(`/api/expenses?budgetId=${budgetResponse.data.id}`); // Replace '/api/expenses' with your actual backend route
+        setExpenses(expensesResponse.data);
+
+        setLoading(false); // Set loading to false after data fetching is complete
+      } catch (error) {
+        setError(error.message); // Set error state if there's an error fetching data
+        setLoading(false); // Set loading to false even if there's an error
+      }
+    };
+
+    fetchData(); // Call fetchData function when component mounts
+  }, []); // Empty dependency array ensures useEffect runs only once when component mounts
+
+  if (loading) {
+    return <div>Loading...</div>; // Display loading message while data is being fetched
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>; // Display error message if there's an error fetching data
+  }
 
   return (
-    <div className="grid-lg" style={{"--accent": budget.color}}>
-      <h1 className="h2"><span className="accent">{budget.name} Overview</span></h1>
+    <div className="grid-lg" style={{ "--accent": budget.color }}>
+      <h1 className="h2">
+        <span className="accent">{budget.name} Overview</span>
+      </h1>
       <div className="flex-lg">
-        <BudgetItem budget={budget} showDelete={true} />
-        <ExprenseForm budgets={[budget]}/>
+        {/* Display budget item */}
+        <div className="budget">
+          <div className="progress-text">
+            <h3>{budget.name}</h3>
+            <p>{budget.amount} Budgeted</p>
+          </div>
+          {/* Calculate and display progress bar */}
+          <progress max={budget.amount} value={calculateTotalExpenses(expenses)}>
+            {formatPercentage(calculateTotalExpenses(expenses) / budget.amount)}
+          </progress>
+          <div className="progress-text">
+            <small>{calculateTotalExpenses(expenses)} spent</small>
+            <small>{budget.amount - calculateTotalExpenses(expenses)} remaining</small>
+          </div>
+        </div>
+        {/* Display expense form */}
+        <ExprenseForm budgetId={budget.id} />
       </div>
-        {
-          expenses && expenses.length > 0 && (
-            <div className="grid-md">
-              <h2>
-                <span className="accent">{budget.name}</span>Expenses
-              </h2>
-              <Table expenses={expenses} showBudget={false}/>
-            </div>
-          )
-        }
+      {/* Display expenses table */}
+      {expenses.length > 0 && (
+        <div className="grid-md">
+          <h2>
+            <span className="accent">{budget.name}</span> Expenses
+          </h2>
+          <Table expenses={expenses} showBudget={false} />
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default BudgetPage
+export default BudgetPage;

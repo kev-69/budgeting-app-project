@@ -1,20 +1,18 @@
-// React Router Dom imports
 import { redirect } from "react-router-dom";
-
-// Helpers imports
-import { deleteItem } from "../helpers";
-
-// Library imports
-import { toast } from "react-toastify";
+import { logoutUser } from "../../Backend/api";
 
 export async function logoutAction () {
-    //Action to delete user and user data
-    deleteItem({key: "userName"})
-    deleteItem({key: "budgets"})
-    deleteItem({key: "expenses"})
+    try {
+        // Call the logoutUser function to log out the user on the backend
+        await logoutUser(); // This function should handle invalidating the user session or token on the server
 
-    toast.success("Your account has been successfully deleted!")
+        // Display success message
+        toast.success("You have been successfully logged out!");
 
-    //Redirecting 
-    return redirect("/")
-} 
+        // Redirect the user to the desired location
+        return redirect("/");
+    } catch(error) {
+        // Display error message
+        throw new Error("There was a problem logging you out.");
+    }
+}

@@ -1,27 +1,18 @@
-// React Router Dom imports
-import { redirect } from "react-router-dom";
-
-// Helpers imports
-import { deleteItem, getAllMatchingItems } from "../helpers";
-
-// Heroicons library imports
 import { toast } from "react-toastify";
+import { deleteBudget as deleteBudgetApi } from "../../Backend/api";
 
-
-export function deleteBudget({params}) {
+export async function deleteBudget({ params }) {
     try {
-        deleteItem({key: "budgets", id: params.id});
+        // Call the deleteBudgetApi function to delete the budget
+        await deleteBudgetApi(params.id);
 
-        const associatedExpenses = getAllMatchingItems({category: "expenses", key:"budgetId", value: params.id});
-
-        associatedExpenses.forEach((expense) => {
-            deleteItem({key: "expenses", id: expense.id
-            })
-        });
-
+        // Display success message
         toast.success("Budget deleted successfully.");
+
+        // Redirect the user to the desired location
+        return redirect("/"); 
     } catch(e) {
-        throw new Error("There was a problem deleting your budget.")
+        // Display error message
+        throw new Error("There was a problem deleting your budget.");
     }
-    return redirect("/"); 
 }

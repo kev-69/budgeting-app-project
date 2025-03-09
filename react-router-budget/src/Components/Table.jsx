@@ -1,33 +1,54 @@
-// Imports from react
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { getAllExpenses } from '../../Backend/api';
+import ExpenseItem from './ExpenseItem';
 
-// Components imports
-import ExpenseItem from './ExpenseItem'
+const Table = () => {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const Table = ({expenses, showBudget = true}) => {
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const data = await getAllExpenses(); // Make API call to get all expenses
+        setExpenses(data); // Update expenses state with data from the server
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, []);
+
   return (
     <div className="table">
-      <table>
-        <thead>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>Error: {error}</p>
+      ) : expenses.length === 0 ? (
+        <p>No expenses to show</p>
+      ) : (
+        <table>
+          <thead>
             <tr>
-                {["Name", "Amount", "Date", showBudget ? "Budget" : "", ""].map ((i, index) => (
-                        <th key={index}>{i}</th>
-                    ) )
-                }
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Date</th>
+              {/* Add more table headers if needed */}
             </tr>
-        </thead>
-        <tbody>
-            {
-                expenses.map ((expense) => (
-                    <tr key={expense.id}>
-                        <ExpenseItem expense={expense} showBudget={showBudget} />
-                    </tr>
-                ))
-            }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {expenses.map(expense => (
+              <ExpenseItem key={expense.id} expense={expense} />
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Table
+export default Table;

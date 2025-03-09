@@ -1,53 +1,42 @@
-// Imports from react
-import React from 'react'
-// React Router Dom imports
-import { Form, Link } from 'react-router-dom';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
+import { deleteBudget } from '../../Backend/api';
+import { formatCurrency, formatPercentage } from '../helpers';
 
-//Helpers
-import { calculateSpentByBudget, formatCurrency, formatPercentage } from '../helpers';
+const BudgetItem = ({ budget }) => {
+  const history = useHistory();
 
-// Heroicon library imports
-import { BanknotesIcon, TrashIcon } from '@heroicons/react/24/outline';
-
-const BudgetItem = ({budget, showDelete = false}) => {
-    const {id, name, amount, color} = budget;
-    const spent = calculateSpentByBudget(id)
+  const handleDelete = async () => {
+    try {
+      await deleteBudget(budget.id); // Invoke your backend API function to delete the budget
+      // Optionally, you can handle any success messages or refresh the page after deletion
+      history.push('/'); // Redirect to the home page or any other page after deletion
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      // Optionally, you can display an error message to the user
+    }
+  };
 
   return (
-    <div className="budget" style={{"--accent": color}}>
-
-        <div className="progress-text">
-            <h3>{name}</h3>
-            <p>{formatCurrency(amount)} Budgeted</p>
-        </div>
-        <progress max={amount} value={spent}>
-            {formatPercentage(spent / amount)}
-        </progress>
-        
-        <div className="progress-text">
-            <small>{formatCurrency(spent)} spent</small>
-            <small>{formatCurrency(amount - spent)} remaining</small>
-        </div>
-        {
-            showDelete ? (
-                <div className="flex-sm">
-                    <Form method="post" action="delete" onSubmit={(event) => {
-                        if (!confirm ("Are you sure you want to permanently delete this budget?")) {
-                            event.preventDefault();
-                        }
-                    }}>
-                        <button type="submit" className="btn"><span>Delete Budget</span><TrashIcon width={20}/></button>
-                    </Form>
-                </div>
-                
-            ) : (
-                <div className="flex-sm">
-                    <Link to={`/budget/${id}`} className="btn"><span>View Details</span><BanknotesIcon width={20}/></Link>
-                </div>               
-            )
-        }
+    <div className="budget">
+      <div className="progress-text">
+        <h3>{budget.name}</h3>
+        <p>{formatCurrency(budget.amount)} Budgeted</p>
+      </div>
+      <progress max={budget.amount} value={budget.spent}>
+        {formatPercentage(budget.spent / budget.amount)}
+      </progress>
+      <div className="progress-text">
+        <small>{formatCurrency(budget.spent)} spent</small>
+        <small>{formatCurrency(budget.amount - budget.spent)} remaining</small>
+      </div>
+      <div className="flex-sm">
+        <button onClick={handleDelete} className="btn" type="button">
+          Delete Budget
+        </button>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default BudgetItem
+export default BudgetItem;

@@ -1,42 +1,34 @@
-// Imports from react
 import React from 'react';
+import { deleteExpense } from '../../Backend/api';
+import { formatCurrency, formatDate } from '../helpers';
 
-// React router dom imports
-import { Form, Link, useFetcher } from 'react-router-dom';
+const ExpenseItem = ({ expense }) => {
+  const handleDelete = async () => {
+    try {
+      await deleteExpense(expense.id); // Invoke your backend API function to delete the expense
+      // Optionally, you can handle any success messages or refresh the page after deletion
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      // Optionally, you can display an error message to the user
+    }
+  };
 
-
-//Heroicons library imports
-import { TrashIcon } from '@heroicons/react/24/outline';
-
-// Helpers
-import { formatCurrency, formatDate, getAllMatchingItems } from '../helpers';
-
-
-const ExpenseItem = ({expense, showBudget}) => {
-  const fetcher = useFetcher();
-
-  const budget = getAllMatchingItems({category: "budgets", key: "id", value: expense.budgetId,})[0];
-  
   return (
     <>
       <td>{expense.name}</td>
       <td>{formatCurrency(expense.amount)}</td>
       <td>{formatDate(expense.createdAt)}</td>
-      {showBudget && (
-        <td>
-          <Link to={`/budget/${budget.id}`} style={{"--accent": budget.color,}}>{budget.name}</Link>
-        </td>
-      )}
       <td>
-        <fetcher.Form method="post">
-          <input type="hidden" name="_action" value="deleteExpense" />
-          <input type="hidden" name="expenseId" value={expense.id} />
-          <button type="submit" className="btn btn--warning" aria-label={`Delete ${expense.name} expense`}> <TrashIcon width={20} />
-          </button>
-        </fetcher.Form>
+        {/* Optionally, display budget information if needed */}
+        {expense.budget && <span>{expense.budget.name}</span>}
+      </td>
+      <td>
+        <button onClick={handleDelete} className="btn btn--warning" type="button">
+          Delete
+        </button>
       </td>
     </>
-  )
-}
+  );
+};
 
-export default ExpenseItem
+export default ExpenseItem;

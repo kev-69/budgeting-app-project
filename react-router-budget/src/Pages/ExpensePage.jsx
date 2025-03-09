@@ -1,56 +1,51 @@
-// React Router Dom imports
-import { useLoaderData } from 'react-router-dom';
-
-//Helpers
-import { deleteItem, fetchData } from '../helpers';
-
-//Components imports
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Errors from '../Pages/Errors';
 import Table from '../Components/Table';
 
-// Library imports
-import { toast } from 'react-toastify';
+const ExpensePage = () => {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-//Loaders
-export async function expensesLoader() {
-  const expenses = fetchData("expenses");
-  return {expenses};
-}
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const response = await axios.get('/api/expenses');
+        setExpenses(response.data);
+        setLoading(false);
+      } catch (error) {
+        setErrorMessage(error.response.data.message); // Adjust this according to your backend error response
+        setLoading(false);
+      }
+    };
 
+    fetchExpenses();
+  }, []);
 
-// Actions
-export async function expenseAction({request}) {
-  const data = await request.formData();
-  const{_action, ...values} = Object.fromEntries(data);
-
-  if (_action === "deleteExpense") {
-    try {
-        deleteItem ({
-        key: "expenses",
-        id: values.expenseId,
-      });
-      return toast.success("Expense deleted!");
-    } catch (e) {
-      throw new Error("There was a problem deleting your expense.")
-    }
+  if (loading) {
+    return <div>Loading...</div>;
   }
-}
 
-export const ExpensePage = () => {
-  const {expenses} = useLoaderData();
+  if (errorMessage) {
+    return <Errors errorMessage={errorMessage} />;
+  }
+
   return (
-    <div className="grid-lg">
+    <div>
       <h1>All Expenses</h1>
-      {
-        expenses && expenses.length > 0 ? (
-          <div className="grid-md">
-            <p><b>Recent Expences</b> <small><i>({expenses.length} total)</i></small></p>
-            <Table expenses={expenses} />
-          </div>
-        ) : (
-          <p>No expenses to show</p>
+      {expenses.length > 0 ? (
+        <div className="grid-md">
+          <p>
+            <b>Recent Expenses</b> <small>({expenses.length} total)</small>
+          </p>
+          <Table expenses={expenses} />
+        </div>
+      ) : (
+        <p>No expenses to show</p>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ExpensePage
+export default ExpensePage;
